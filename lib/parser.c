@@ -1,91 +1,119 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <sys/types.h>
+
+typedef uint64_t u64;
+typedef uint32_t u32;
+typedef uint16_t u16;
+typedef uint8_t u8;
+
+typedef int64_t i64;
+typedef int32_t i32;
+typedef int16_t i16;
+typedef int8_t i8;
 
 typedef enum {
     ONE,
-    OPTIONAL,
-    ONE_OR_MORE,
     ZERO_OR_MORE,
+    OPTIONAL,
+    ONE_OR_MORE
 } match;
 
-typedef struct TOKEN{
-    match state;
-    char symbol;
-} token;
-
-union item{
-    union item* v;
-    token t;
-};
-
 typedef struct {
-    char key;
-    union item value;
-} value;
+    union element* el;
+    u16 len;
+} pattern;
 
-value* parse(char* in, int in_len, int* out_len) {
-    *out_len = 0;
-    int max_len = 10;
+typedef union element {
+    struct {
+        u64 high;
+        u64 low;
+        match match;
+    }t;
+   pattern e;
+} element;
+
+void insert(element* item, char character);
+
+typedef struct LENSTACK {
+    u16 len;
+    struct LENSTACK* tail;
+} lenStack;
+
+pattern parse(char* str, u16 len) {
+    pattern out;
+    out.len = 0;
+    out.el = malloc(10*sizeof(element));
+    lenStack maxOutLen;
+    maxOutLen.len = 10;
+    maxOutLen.tail = NULL;
+    pattern* head = &out;
     bool escaped = false;
-    value* out = malloc(max_len*sizeof(value));
-    for (int i; i<in_len; i++) {
+    for (u16 i = 0; i < len; i++) {
         if (escaped) {
-            out[*out_len].key = 'v';
-            out[*out_len].value.t.state = ONE;
-            out[*out_len].value.t.symbol = in[i];
-            (*out_len)++;
+            head->el[++(head->len)].t.match = ONE;
+            insert(&head->el[head->len], str[i]);
             escaped = false;
-        } else {
-            switch (in[i]) {
-                case '\\':
-                    escaped = true;
-                    break;
-                case '(':
-                    break;
-                case ')':
-                    break;
-                case '+':
-                    if (out[*out_len].value.t.state != ONE) {
-                        fprintf(stderr, "Invalid syntax");
-                        return NULL;
-                    }
-                    out[*out_len].value.t.state = ONE_OR_MORE;
-                    break;
-                case '*':
-                    if (out[*out_len].value.t.state != ONE) {
-                        fprintf(stderr, "Invalid syntax");
-                        return NULL;
-                    }
-                    out[*out_len].value.t.state = ZERO_OR_MORE;
-                    break;
-                case '?':
-                    if (out[*out_len].value.t.state != ONE) {
-                        fprintf(stderr, "Invalid syntax");
-                        return NULL;
-                    }
-                    out[*out_len].value.t.state = OPTIONAL;
-                    break;
-                case '.':
-                    break;
-                default:
-                    out[*out_len].key = 'v';
-                    out[*out_len].value.t.state = ONE;
-                    out[*out_len].value.t.symbol = in[i];
-                    (*out_len)++;
-                    break;
-            }
+        } else
+        switch (str[i]) {
+            case '.':
+                head->el[++(head->len)].t.match = ONE;
+                head->el[head->len].t.high = UINT64_MAX;
+                head->el[head->len].t.low = UINT64_MAX;
+                break;
+            case '*':
+                if (head->el[head->len].t.match == ONE)
+                    head->el[head->len].t.match = ZERO_OR_MORE;
+                else
+                    goto fail;
+                break;
+            case '+':
+                if (head->el[head->len].t.match == ONE)
+                    head->el[head->len].t.match = ONE_OR_MORE;
+                else
+                    goto fail;
+                break;
+            case '?':
+                if (head->el[head->len].t.match == ONE)
+                    head->el[head->len].t.match = OPTIONAL;
+                else
+                    goto fail;
+                break;
+            case '\\':
+                escaped = true;
+                break;
+            case '[':;
+                lenStack new;
+                new.len = 10;
+                new.tail = &maxOutLen;
+                maxOutLen = new;
+                pattern new_head;
+                head->el[++(head->len)].e = new_head;
+                break;
+            case ']':
+                break;
+            default:
+                head->el[++(head->len)].t.match = ONE;
+                insert(&head->el[head->len], str[i]);
         }
-        if ((*out_len) == max_len) {
-            max_len *= 2;
-            value* tmp = realloc(out, max_len*sizeof(value));
-            if (tmp == NULL) {
-                free(out);
-                fprintf(stderr, "Failed to allocate memory: aborting");
-                return NULL;
-            }
-            out = tmp;
-        }
+
     }
     return out;
+fail:;
+    pattern tmp;
+    tmp.len = 0;
+    tmp.el = NULL;
+    return tmp;
+}
+
+void insert(element* e, char c) {
+    if (c >= 64) {
+        e->t.high =  1<<(c - 64);
+        e->t.low = 0;
+    } else {
+        e->t.high = 0;
+        e->t.low =  1<<(c);
+    }
 }
