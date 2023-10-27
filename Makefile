@@ -3,10 +3,15 @@ TEST_IN=src/tests.c
 OUT=bin/main.exe
 TEST_OUT=bin/tests.exe
 
-CC=gcc
+CC=gcc -Wall
 
 build:
         $(CC) $(IN) -o $(OUT)
+
+lib:
+	$(CC)
+
+l: lib
 
 run: build
         $(OUT)
