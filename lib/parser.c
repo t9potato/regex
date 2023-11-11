@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "defs.h"
+#include "regex.h"
 
 void insert(element* item, char character);
 
@@ -9,7 +9,7 @@ typedef struct LENSTACK {
     struct LENSTACK* tail;
 } lenStack;
 
-pattern regexComp(char* str, u16 len) {
+pattern regComp(char* str, u16 len) {
     pattern out;
     out.len = 0;
     out.el = malloc(10*sizeof(element));
