@@ -1,25 +1,23 @@
-IN=src/main.c
-TEST_IN=src/tests.c
+IN=tests/main.c
 OUT=bin/main
 TEST_OUT=bin/tests.exe
-
-CC=gcc -Wall
+CC=gcc -Wall -g
+ifeq ($(OS), Windows_NT)
+	LIB_TARGET = regx.dll
+else
+	LIB_TARGET = libregx.so
+endif
 
 build:
-	$(CC) -c $(IN) -o $(OUT).o
+	# $(CC) -c $(IN) -o $(OUT).o
 	$(CC) $(OUT).o -o $(OUT) -lregx -L ./bin
 
 
 l: lib/match.c lib/parser.c lib/regex.h
-	$(CC) -o bin/libregx.so -fpic -shared lib/match.c lib/parser.c 
+	$(CC) -o bin/$(LIB_TARGET) -fpic -shared lib/match.c lib/parser.c 
 
-run: build
+test: build
 	LD_LIBRARY_PATH="./bin/" $(OUT)
-r: run
-
-test:
-	$(CC) $(TEST_IN) -o $(TEST_OUT)
-	$(TEST_OUT)
 t: test
 
 clean:

@@ -34,7 +34,7 @@ typedef union element {
         u64 low;
         match match;
     }t;
-   pattern e;
+    pattern e;
 } element;
 
 pattern regComp(char* pattern, u16 length);

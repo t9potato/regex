@@ -30,7 +30,7 @@ pattern regComp(char* str, u16 len) {
                         break;
                     default:
                         if (str[i] >= 64) {
-                            head->el[head->len].t.high |= 1<<(str[i]-64);
+                            head->el[head->len].t.low |= 1<<(str[i]-64);
                         } else {
                             head->el[head->len].t.high |= 1<<(str[i]);
                         }
@@ -79,7 +79,7 @@ pattern regComp(char* str, u16 len) {
                     maxOutLen = new;
                     pattern new_head;
                     new_head.el = malloc(10*sizeof(pattern));
-                    new_head.len = 10;
+                    new_head.len = 0;
                     new_head.tail = head;
                     head->el[++(head->len)].e = new_head;
                     head = &new_head;
@@ -100,7 +100,7 @@ pattern regComp(char* str, u16 len) {
                     insert(&head->el[head->len], str[i]);
             }
         }
-        if (out.len > maxOutLen.len-1) {
+        if (out.len >= maxOutLen.len-1) {
             maxOutLen.len *= 2;
             void* result = realloc(out.el, maxOutLen.len * sizeof(pattern));
             if (result == NULL) {
