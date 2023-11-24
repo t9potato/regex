@@ -22,20 +22,28 @@ typedef enum {
     ONE_OR_MORE
 } match;
 
+
 typedef struct pattern {
-    union element* el;
+    struct element* el;
     u16 len;
     struct pattern* tail;
 } pattern;
 
-typedef union element {
-    struct {
-        u64 high;
-        u64 low;
-        match match;
-    }t;
-    pattern e;
+typedef struct element {
+    enum {
+        ELE,
+        PAT
+    } type;
+    union {
+        struct {
+            u64 high;
+            u64 low;
+            match match;
+        }t;
+        pattern e;
+    } value;
 } element;
+
 
 pattern regComp(char* pattern, u16 length);
 bool regRun(char* string, u16 length, pattern search);

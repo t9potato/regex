@@ -9,7 +9,7 @@ else
 endif
 
 build:
-	# $(CC) -c $(IN) -o $(OUT).o
+	$(CC) -c $(IN) -o $(OUT).o
 	$(CC) $(OUT).o -o $(OUT) -lregx -L ./bin
 
 

@@ -4,8 +4,8 @@
 int main(int argc, char** argv) {
     pattern search = regComp("abc(def)ghi", 11) ;
     if (regRun("abcdefghi", 9, search)) {
-        printf("success");
+        printf("success\n");
     } else {
-        printf("failure");
+        printf("failure\n");
     }
 }
