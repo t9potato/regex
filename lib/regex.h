@@ -3,17 +3,6 @@
 
 #include <sys/types.h>
 #include <stdint.h>
-#include <stdbool.h>
-
-typedef uint64_t u64;
-typedef uint32_t u32;
-typedef uint16_t u16;
-typedef uint8_t u8;
-
-typedef int64_t i64;
-typedef int32_t i32;
-typedef int16_t i16;
-typedef int8_t i8;
 
 typedef enum {
     ONE,
@@ -22,10 +11,9 @@ typedef enum {
     ONE_OR_MORE
 } match;
 
-
 typedef struct pattern {
     struct element* el;
-    u16 len;
+    uint16_t len;
     struct pattern* tail;
 } pattern;
 
@@ -36,8 +24,8 @@ typedef struct element {
     } type;
     union {
         struct {
-            u64 high;
-            u64 low;
+            uint64_t high;
+            uint64_t low;
             match match;
         }t;
         pattern e;
@@ -45,6 +33,7 @@ typedef struct element {
 } element;
 
 
-pattern regComp(char* pattern, u16 length);
-bool regRun(char* string, u16 length, pattern search);
+pattern regComp(char* pattern, uint16_t length);
+int regRun(char* string, uint16_t length, pattern search);
+void regFree(pattern);
 #endif

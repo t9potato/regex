@@ -8,7 +8,7 @@ else
 	LIB_TARGET = libregx.so
 endif
 
-build:
+build: l
 	$(CC) -c $(IN) -o $(OUT).o
 	$(CC) $(OUT).o -o $(OUT) -lregx -L ./bin
 
@@ -18,7 +18,8 @@ l: lib/match.c lib/parser.c lib/regex.h
 
 test: build
 	LD_LIBRARY_PATH="./bin/" $(OUT)
-t: test
+tv: build
+	LD_LIBRARY_PATH="./bin/" valgrind --leak-check=yes $(OUT)
 
 clean:
 	rm -rf ./bin/*
