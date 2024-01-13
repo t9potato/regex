@@ -1,6 +1,5 @@
 IN=tests/main.c
 OUT=bin/main
-TEST_OUT=bin/tests.exe
 CC=gcc -Wall -g
 ifeq ($(OS), Windows_NT)
 	LIB_TARGET = regx.dll
